@@ -300,10 +300,7 @@ static int do_firmware_upgrade(const ulong size) {
 			int fw_type = check_fw_type((void *)UPLOAD_ADDR);
 			if (fw_type == FW_TYPE_UBI) {
 				print_upgrade_warning("FIRMWARE");
-				if (webfailsafe_backup_avail_enabled)
-					sprintf(buf, "flash %s 0x%lx $filesize && flash %s 0x%lx $filesize && flash %s 0x%lx $filesize && flash %s 0x%lx $filesize", ROOTFS_NAME0, UPLOAD_ADDR, ROOTFS_NAME1, UPLOAD_ADDR, ROOTFS_NAME2, UPLOAD_ADDR, ROOTFS_NAME_1, UPLOAD_ADDR);
-				else
-					sprintf(buf, "flash %s 0x%lx $filesize && flash %s 0x%lx $filesize && flash %s 0x%lx $filesize", ROOTFS_NAME0, UPLOAD_ADDR, ROOTFS_NAME1, UPLOAD_ADDR, ROOTFS_NAME2, UPLOAD_ADDR);
+				sprintf(buf, "flash %s 0x%lx $filesize", ROOTFS_NAME0, UPLOAD_ADDR);
 			} else if (fw_type == FW_TYPE_FIT) {
 				print_upgrade_warning("FIRMWARE");
 				sprintf(buf, "sf probe; imgaddr=0x%lx && source $imgaddr:script", UPLOAD_ADDR);
@@ -351,10 +348,7 @@ static int do_firmware_upgrade(const ulong size) {
 			if (get_which_flash_param("rootfs") > 0) {
 				if (fw_type == FW_TYPE_UBI) {
 					print_upgrade_warning("FIRMWARE");
-					if (webfailsafe_backup_avail_enabled)
-						sprintf(buf, "flash %s 0x%lx $filesize && flash %s 0x%lx $filesize && flash %s 0x%lx $filesize && flash %s 0x%lx $filesize", ROOTFS_NAME0, UPLOAD_ADDR, ROOTFS_NAME1, UPLOAD_ADDR, ROOTFS_NAME2, UPLOAD_ADDR, ROOTFS_NAME_1, UPLOAD_ADDR);
-					else
-						sprintf(buf, "flash %s 0x%lx $filesize && flash %s 0x%lx $filesize && flash %s 0x%lx $filesize", ROOTFS_NAME0, UPLOAD_ADDR, ROOTFS_NAME1, UPLOAD_ADDR, ROOTFS_NAME2, UPLOAD_ADDR);
+					sprintf(buf, "flash %s 0x%lx $filesize", ROOTFS_NAME0, UPLOAD_ADDR);
 				} else if (fw_type == FW_TYPE_SYSUPGRADE) {
 					print_upgrade_warning("FIRMWARE");
 					sysupgrade_fw_parts parts = parse_sysupgrade_firmware((void *)UPLOAD_ADDR);

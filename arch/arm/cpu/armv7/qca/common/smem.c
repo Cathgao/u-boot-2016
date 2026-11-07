@@ -458,6 +458,7 @@ unsigned smem_read_alloc_entry(smem_mem_type_t type, void *buf, int len)
 int smem_ptable_init(void)
 {
 	unsigned ret;
+	int i;
 
 	ret = smem_read_alloc_entry(SMEM_AARM_PARTITION_TABLE,
 				    &smem_ptable, sizeof(smem_ptable));
@@ -476,6 +477,21 @@ int smem_ptable_init(void)
 		smem_ptable.magic[1] != _SMEM_PTABLE_MAGIC_2)
 		return -ENOMSG;
 
+	/*
+	 * Single rootfs patch:
+	 * Merge rootfs and all subsequent space up to end of flash (117.5 MiB).
+	 * rootfs starts at block 84 (0x00a80000). Total flash is 1024 blocks (128 MiB).
+	 * Set rootfs size = 1024 - 84 = 940 blocks (0x7580000 bytes = 117.5 MiB).
+	 * Truncate smem_ptable to remove rootfs_1, overlay, and rsvd0/data.
+	 */
+	for (i = 0; i < smem_ptable.len; i++) {
+		if (strncmp(smem_ptable.parts[i].name, "rootfs", SMEM_PTN_NAME_MAX) == 0) {
+			smem_ptable.parts[i].size = 1024 - smem_ptable.parts[i].start;
+			smem_ptable.len = i + 1;
+			break;
+		}
+	}
+
 	debug("smem ptable found: ver: %d len: %d\n",
 	      smem_ptable.version, smem_ptable.len);
 
@@ -491,6 +507,7 @@ int smem_ptable_init(void)
 int mibib_ptable_init(unsigned int* addr)
 {
 	struct smem_ptable* ptable;
+	int i;
 
 	ptable = (struct smem_ptable*) addr;
 	if (ptable->magic[0] != _SMEM_PTABLE_MAGIC_1 ||
@@ -501,6 +518,14 @@ int mibib_ptable_init(unsigned int* addr)
 	      smem_ptable.version, smem_ptable.len);
 
 	memcpy(&smem_ptable, addr, sizeof(smem_ptable));
+
+	for (i = 0; i < smem_ptable.len; i++) {
+		if (strncmp(smem_ptable.parts[i].name, "rootfs", SMEM_PTN_NAME_MAX) == 0) {
+			smem_ptable.parts[i].size = 1024 - smem_ptable.parts[i].start;
+			smem_ptable.len = i + 1;
+			break;
+		}
+	}
 
 	return 0;
 }
